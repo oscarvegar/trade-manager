@@ -73,7 +73,7 @@ public class BackTestBrokerModel extends AbstractBrokerModel implements
 
 	/**
 	 * 
-	 */ 
+	 */
 	private static final long serialVersionUID = 3191422640254347940L;
 
 	private final static Logger _log = LoggerFactory

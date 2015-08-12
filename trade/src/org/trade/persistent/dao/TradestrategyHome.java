@@ -406,7 +406,7 @@ public class TradestrategyHome {
 					.createQuery(Tradestrategy.class);
 			Root<Tradestrategy> from = query.from(Tradestrategy.class);
 			query.select(from);
-			query.orderBy(builder.asc(from.join("contract").get("symbol")));
+			//query.orderBy(builder.asc(from.join("contract").get("symbol")));
 
 			List<Predicate> predicates = new ArrayList<Predicate>();
 

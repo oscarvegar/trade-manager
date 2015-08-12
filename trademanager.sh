@@ -21,7 +21,8 @@ echo "Using default config.properties from /config dir."
 fi
 
 # set the timezone to be your markets zone so NYSE=America/New_York London=GMT
-TIMEZONE=America/New_York
+#TIMEZONE=America/New_York
+TIMEZONE=America/Mexico_City
 
 echo "PATH=$PATH"
 echo "CLASSPATH=$LOCALCLASSPATH"

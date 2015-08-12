@@ -1,0 +1,3 @@
+Si A = P = 10.00 (Low del dia anterior) entonces quiero hacer una compra (BUY) STPLMT (0.04)
+Si A, Sigue subiendo 50% (5.00), entonces, el STPLMT = 14.96,
+	Si el stock sigue subiendo otros 50%, el STPLMT (Stop Limit de Venta) sube igual al paso 2.

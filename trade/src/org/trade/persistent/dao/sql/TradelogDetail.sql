@@ -96,6 +96,8 @@ and portfolio.idPortfolio = :idPortfolio
 group by
 contract.symbol,
 tradeposition.idTradePosition
+, tradingday.open
+, tradestrategy.idTradeStrategy
 union all
 select
 'A' as sortCol,

@@ -164,9 +164,13 @@ public class YahooBroker extends Broker {
 	private void setYahooContractDetails(Contract contract) throws IOException {
 
 		/*
-		 * Yahoo finance http://finance.yahoo.com/d/quotes.csv?s=XOM&f=n
+		 * Yahoo finance 
+		 * http://finance.yahoo.com/d/quotes.csv?s=XOM&f=n
+		 * http://real-chart.finance.yahoo.com/table.csv?s=IBM&d=7&e=12&f=2015&g=d&a=0&b=2&c=1962&ignore=.csv
 		 */
 		String strUrl = "http://finance.yahoo.com/d/quotes.csv?s="
+				+ contract.getSymbol() + "&f=n";
+		strUrl = "http://real-chart.finance.yahoo.com/table.csv?s="
 				+ contract.getSymbol() + "&f=n";
 
 		// _log.info("URL : " + strUrl);

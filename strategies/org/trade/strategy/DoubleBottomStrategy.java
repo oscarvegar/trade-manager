@@ -37,7 +37,6 @@ package org.trade.strategy;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -46,12 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trade.broker.BrokerModel;
 import org.trade.core.factory.ClassFactory;
-import org.trade.core.util.TradingCalendar;
 import org.trade.core.valuetype.Money;
 import org.trade.dictionary.valuetype.Action;
 import org.trade.dictionary.valuetype.OrderStatus;
 import org.trade.dictionary.valuetype.OrderType;
-import org.trade.dictionary.valuetype.Side;
 import org.trade.dictionary.valuetype.TradestrategyStatus;
 import org.trade.persistent.PersistentModel;
 import org.trade.persistent.PersistentModelException;
@@ -67,14 +64,14 @@ import org.trade.strategy.data.candle.CandleItem;
  * @version $Revision: 1.0 $
  */
 
-public class BreakEvenStrategy extends AbstractStrategyRule {
+public class DoubleBottomStrategy extends AbstractStrategyRule {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2281013751087462982L;
 	private final static Logger _log = LoggerFactory
-			.getLogger(BreakEvenStrategy.class);
+			.getLogger(DoubleBottomStrategy.class);
 
 	private Integer openPositionOrderKey = null;
 	
@@ -83,8 +80,13 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	private static int QuantityShares = 100;
 	
 	private boolean StrategyOK = false;
+	private CandleItem CandlePositionA;
+	private CandleItem CandlePositionB;
+	private CandleItem CandlePositionC;
 	
 	private Double LastAuxStopPrice;
+	private Double LastLowDecrease;
+	private Double LastLowIncrease;
 
 	/**
 	 * Default Constructor Note if you use class variables remember these will
@@ -101,7 +103,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	 *            Integer
 	 */
 
-	public BreakEvenStrategy(BrokerModel brokerManagerModel,
+	public DoubleBottomStrategy(BrokerModel brokerManagerModel,
 			StrategyData strategyData, Integer idTradestrategy) {
 		super(brokerManagerModel, strategyData, idTradestrategy);
 	}
@@ -184,12 +186,12 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 				this.cancel();
 				return;
 			}
-			
+
 			/*
 			 * Create code here to create orders based on your conditions/rules.
-			 *
-			 *
-			 * Validamos que la estrategia solo se ejecute dentro del periodo de 9:30am a 15:00pm
+			 * 
+			 * 
+			 * Validamos que la estrategia se ejecute en el preiodo de 9:00am a 15:00pm
 			 */
 
 			if (startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().minusSeconds(1))
@@ -199,94 +201,87 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 				/*
 				 * Example On start of the second (9:35) candle check the 9:30
 				 * candle and buy over under in the direction of the bar.
-				 *
-				 *
-				 * Validamos que no hayan transcurrido 25min (despues de la apertura) y que la estrategia
-				 * no se haya cumplido
-				 **/
-				if(startPeriod.isBefore(this.getTradestrategy().getTradingday()
-						.getOpen().plusMinutes(25)) && !StrategyOK) {
+				 * 
+				 * 
+				 * Validamos que no hayan pasado 35min y que la posion A no haya sido asiganda
+				 */
+				if(startPeriod.isBefore(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35).plusSeconds(1))
+						&& CandlePositionA == null) {
 					
 					Candle currentCandle = currentCandleItem.getCandle();
 					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
 					
-					if(currentCandle.getLow().doubleValue() == prevDayCandle.getLow().doubleValue()) {	// Validamos que el valor actual de LOW sea igual al de P
-						StrategyOK = Boolean.TRUE;
+					if(currentCandle.getLow().doubleValue() == prevDayCandle.getLow().doubleValue()) {
+						CandlePositionA = currentCandleItem;	// Asignamos el punto A
+					}
+				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35))
+						&& CandlePositionA == null) {	// Si pasaron mas de 35min y la posicion A no fue asiganda, entonces cancelamos la estrategia
+					this.cancel();
+					return;
+				} else if(CandlePositionA != null) {
+					if(startPeriod.isBefore(CandlePositionA.getPeriod().getStart().plusMinutes(50).plusSeconds(1))
+							&& CandlePositionB == null) {	// Validamos que no hayan pasado mas de 50min a partir del punto A y que la posicion B no haya sido asiganda
 						
-						if(!this.isThereOpenPosition()) {	// Siempre que no haya una orden abierta ...
-							//Money auxStopPrice = new Money(prevDayCandle.getLow());
+						Candle currentCandle = currentCandleItem.getCandle();
+						Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
+						
+						if(currentCandle.getLow().doubleValue() == prevDayCandle.getLow().doubleValue()) {
+							CandlePositionB = currentCandleItem;	// Asignamos el punto B
+						/*
+						} else if(currentCandle.getLow().doubleValue() >= addAPercentToANumber(prevDayCandle.getLow().doubleValue(), 1)) {
+
 							Money auxStopPrice = new Money(prevDayCandle.getLow()).subtract(new Money(0.04));
-							Money limitPrice = new Money(prevDayCandle.getLow());
+							Money limitPrice = new Money(prevDayCandle.getLow()).subtract(new Money(0.04));
 							LastAuxStopPrice = auxStopPrice.doubleValue();
 							
 							TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
-									Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
+									Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);
+						*/
 						}
+					} else if(startPeriod.isAfter(CandlePositionA.getPeriod().getStart().plusMinutes(50))
+							&& CandlePositionB == null) {	// Si pasaron mas de 50min y la posicion B no fue asiganda, entonces cancelamos la estrategia
+						this.cancel();
+						return;
+					} else if(CandlePositionB != null) {
 						
-						_log.info("StrategyOK::" + StrategyOK + ", LastAuxStopPrice::" + LastAuxStopPrice + ", Symbol::" + this.getSymbol());
-						
-						/*
-						TradeOrder tradeOrder = new TradeOrder(this.getTradestrategy(),
-								Action.BUY, OrderType.STPLMT, 100, price,
-								price.add(new BigDecimal(0.02)),
-								TradingCalendar.getDateTimeNowMarketTimeZone());
-						//tradeOrder.setClientId(clientId);
-						tradeOrder.setTransmit(new Boolean(true));
-						//tradeOrder.setStatus(OrderStatus.UNSUBMIT);
-						this.submitOrder(this.getTradestrategy().getContract(), tradeOrder);
-						*/
-					}
-					
-				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday()
-						.getOpen().plusMinutes(25)) && !StrategyOK) {	// Si han pasado 25min y no se cumplio la estrategia, cancelamos la ejecución
-					this.cancel();
-					return;
-				} else if(StrategyOK) {	// Si se ejecuto la estrategia...
-					
-					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);
+						if(currentCandleItem.getLow() <= substractAPercentToANumber(CandlePositionB.getLow(), 1)) {	// Validamos si hubo un decremento sobre la posicion B en 1%
+							
+							if(LastLowDecrease == null) {	// Asignamos el valor del decremento al punto C 
+								LastLowDecrease = currentCandleItem.getLow();
+								CandlePositionC = currentCandleItem;
+							} else {
+								if(currentCandleItem.getLow() <= substractAPercentToANumber(CandlePositionC.getLow(), 1)) {	// Validamos si hubo un decremento sobre la posicion en C en 1%
+									LastLowDecrease = currentCandleItem.getLow();
+									CandlePositionC = currentCandleItem;
+								} else if(currentCandleItem.getLow() >= substractAPercentToANumber(CandlePositionC.getLow(), 1)
+										&& currentCandleItem.getLow() >= addAPercentToANumber(CandlePositionC.getLow(), 1)) {	// Validamos si hubo un incremento sobre la posicion en C en 1%
 
-					/*
-					 * Is the candle in the direction of the Tradestrategy side i.e.
-					 * a long play should have a green 5min candle
-					 */
-					CandleItem prevCandleItem = null;
-					if (getCurrentCandleCount() > 0) {
-						prevCandleItem = (CandleItem) candleSeries
-								.getDataItem(getCurrentCandleCount() - 1);
-						// AbstractStrategyRule
-						// .logCandle(this, prevCandleItem.getCandle());
-					}
+									LastLowDecrease = currentCandleItem.getLow();
+									CandlePositionC = currentCandleItem;
 
-					this.reFreshPositionOrders();
-					// double lastAuxStopPrice = this.getOpenPositionOrder().getAuxPrice().doubleValue();
-					if(currentCandleItem.getLow() > prevCandleItem.getLow() 
-							&& currentCandleItem.getLow() >= addAPercentToANumber(LastAuxStopPrice, 50)) {
-						/*
-						 * Validamos que haya un incremento en LOW entre la
-						 * posicion actual y la posicion anterior del dia; y
-						 * además, que el incremento de LOW del dia sea mayor o
-						 * igual a un 50% de LOW del dia anterior
-						 */
-						
-						/*
-						Money stopPrice = addPennyAndRoundStop(this
-								.getOpenPositionOrder().getAverageFilledPrice()
-								.doubleValue(), getOpenTradePosition()
-								.getSide(), Action.BUY, 0.04);
-						moveStopOCAPrice(stopPrice, true);
-						*/
+									Money auxStopPrice = new Money(CandlePositionC.getLow()).subtract(new Money(0.04));
+									Money limitPrice = new Money(CandlePositionC.getLow());
+									LastAuxStopPrice = auxStopPrice.doubleValue();
+									
+									TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
+											Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
+									
+								}
+							}
+							
+						} else {
+							if(currentCandleItem.getLow() >= addAPercentToANumber(CandlePositionB.getLow(), 1)) {	// Validamos si hubo un incremento sobre la posicion B en 1%
 
-						Money auxStopPrice = new Money(addAPercentToANumber(LastAuxStopPrice, 50))
-								.subtract(new Money(0.04));
-						Money limitPrice = new Money(addAPercentToANumber(LastAuxStopPrice, 50));
-						LastAuxStopPrice = auxStopPrice.doubleValue();
-						
-						TradeOrder tradeOrder = this.updateOrder(this.getOpenPositionOrder().getOrderKey(),
-								Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares,
-								false, true);	// Creamos y transmitimos una orden BUY, STPLMT = (LOW + 50%) - 4c
-						this.reFreshPositionOrders();
+								Money auxStopPrice = new Money(CandlePositionB.getLow()).subtract(new Money(0.04));
+								Money limitPrice = new Money(CandlePositionB.getLow());
+								LastAuxStopPrice = auxStopPrice.doubleValue();
+								
+								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
+										Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
+								
+							}
+						}
 					}
-					_log.info("StrategyOK::" + StrategyOK + ", LastAuxStopPrice::" + LastAuxStopPrice + ", Symbol::" + this.getSymbol());
 				}
 				
 			}
@@ -363,7 +358,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	public double getPercentOfANumber(double number, int percent) {
 		double percentOfNumber = 0.0;
 		
-		percentOfNumber = number * (percent / 100);
+		percentOfNumber = number * (percent / (double) 100);
 		
 		return percentOfNumber;
 	}
@@ -391,7 +386,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	public double substractAPercentToANumber(double number, int percent) {
 		double numberMinusPercent = 0.0;
 		
-		numberMinusPercent = number * (1 - (percent / 100));
+		numberMinusPercent = number * ((double) 1 - (percent / (double) 100));
 		
 		return numberMinusPercent;
 	}

@@ -148,22 +148,20 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 			
 			
 			if (this.isThereOpenPosition()) {
-				_log.info("La posicion esta abierta para el symbol: "
-						+ getSymbol() + " startPeriod: " + startPeriod);
+				_log.info("La posicion esta abierta para el symbol: " + getSymbol() + " startPeriod: " + startPeriod);
 				/*
 				 * If the order is partial filled check if the risk goes beyond
 				 * 1 risk unit. If it does cancel the openPositionOrder this
 				 * will cause it to be marked as filled.
-				 */
-				if (OrderStatus.PARTIALFILLED.equals(this
-						.getOpenPositionOrder().getStatus())) {
-					if (isRiskViolated(currentCandleItem.getClose(), this
-							.getTradestrategy().getRiskAmount(), this
-							.getOpenPositionOrder().getQuantity(), this
-							.getOpenPositionOrder().getAverageFilledPrice())) {
+				*/
+				
+				if (OrderStatus.PARTIALFILLED.equals(this.getOpenPositionOrder().getStatus())) {
+					if (isRiskViolated(currentCandleItem.getClose(), this.getTradestrategy().getRiskAmount(), 
+						this.getOpenPositionOrder().getQuantity(), this.getOpenPositionOrder().getAverageFilledPrice())) {
 						this.cancelOrder(this.getOpenPositionOrder());
 					}
-				}
+				}	
+					
 				this.cancel();
 				return;
 			}else{
@@ -171,73 +169,85 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 					CandlePivote pivote = stocksPivoting.get( getSymbol() );
 					
 					if( pivote == null ){
-						System.out.println("PRIMER ACCESO>>>>");
+					_log.info("PRIMER ACCESO>>>>");
 						stocksPivoting.put( getSymbol() , new CandlePivote( currentCandleItem ));
-						System.out.println(" * ******************************************** *");
+						_log.info(" * ******************************************** *");
 						return;
 					}
 					
 					CandleItem pivoteCandle = pivote.getPivote();
-					System.out.println(" * PIVOTE *");
-					System.out.println( pivoteCandle.getCandle().getContract() + " : " + 
+					_log.info(" * PIVOTE *");
+					_log.info( pivoteCandle.getCandle().getContract() + " : " + 
 							pivoteCandle.getPeriod() );
-					System.out.println("LOW: "+ pivoteCandle.getLow()	);
-					System.out.println("HIGH: "+ pivoteCandle.getHigh() );
-					System.out.println("CLOSE: "+ pivoteCandle.getClose() );
-					System.out.println(" * CURRENT *");
-					System.out.println( getSymbol() + " : " + currentCandleItem.getPeriod() );
-					System.out.println("LOW: "+ currentCandleItem.getLow()	);
-					System.out.println("HIGH: "+ currentCandleItem.getHigh() );
-					System.out.println("CLOSE: "+ currentCandleItem.getClose() );
-					System.out.println(" * DATA *");
+					_log.info("LOW: "+ pivoteCandle.getLow()	);
+					_log.info("HIGH: "+ pivoteCandle.getHigh() );
+					_log.info("CLOSE: "+ pivoteCandle.getClose() );
+					_log.info(" * CURRENT *");
+					_log.info( getSymbol() + " : " + currentCandleItem.getPeriod() );
+					_log.info("LOW: "+ currentCandleItem.getLow()	);
+					_log.info("HIGH: "+ currentCandleItem.getHigh() );
+					_log.info("CLOSE: "+ currentCandleItem.getClose() );
+					_log.info(" ** DATA ** ");
 					long diff = currentCandleItem.getPeriod().getFirstMillisecond() -
 							pivoteCandle.getPeriod().getFirstMillisecond();
 					long diffMinutes = diff / (60 * 1000) % 60;
-					double diffLows =  Math.abs(currentCandleItem.getLow() - pivoteCandle.getLow());
-					double diffHighs =  Math.abs(currentCandleItem.getHigh() - pivoteCandle.getHigh());
-					System.out.println(getSymbol() + " :: Diff Low: "+ diffLows );
-					System.out.println(getSymbol() + " :: Diff High: "+ diffHighs );
-					System.out.println(getSymbol() + " :: TimeElapsed: "+ diffMinutes + " min. ");
+					//double diffLows =  Math.abs(currentCandleItem.getLow() - pivoteCandle.getLow());
+					//double diffHighs =  Math.abs(currentCandleItem.getHigh() - pivoteCandle.getHigh());
+					
+					double rangoInferior = pivoteCandle.getClose() - 0.05;
+					double rangoSuperior = pivoteCandle.getClose() + 0.15;
+					
+					
+					//_log.info(getSymbol() + " :: Diff Low: "+ diffLows );
+					//_log.info(getSymbol() + " :: Diff High: "+ diffHighs );
+					//_log.info(getSymbol() + " :: Diff Close: "+ diffClose );
+					_log.info(getSymbol() + " :: Rango Inferior: " + rangoInferior );
+					_log.info(getSymbol() + " :: Rango Superior: " + rangoSuperior );
+					_log.info(getSymbol() + " :: TimeElapsed: "+ diffMinutes + " min. ");
 					
 					if( pivote.isCandidato() ){
-						if( diffLows < 0.05 && diffHighs < 0.15 ){
+						if( currentCandleItem.getClose() > rangoInferior && currentCandleItem.getClose() < rangoSuperior ){
 							// Esta dentro del rango de valores deseados, checamos el tiempo que ha pasado
 							// 180 minutos =  3 hrs
-							System.out.println(getSymbol() + " sigue siendo candidato");
+							_log.info(getSymbol() + " sigue siendo candidato");
 							if( diffMinutes > 180 ){
 								// Si el tiempo es mayor a 3 horas, eliminamos el monitoreo
-								System.out.println(getSymbol() + " ya sobrepaso las 3 hrs");
+								_log.info(getSymbol() + " ya sobrepaso las 3 hrs");
 								pivote.setCandidato(false);
 								stocksPivoting.put( getSymbol() , pivote);
 							}
 							
-						}else{
+						} else {
+							
 							// Salio fuera del rango, verificamos si hacemos un buy o un sell
-							System.out.println(getSymbol() + " es candidato y salio fuera del rango");
-							if( diffLows > 0.20 ){
+							_log.info(getSymbol() + " es candidato y salio fuera del rango");
+							double rangoInferiorSell = pivoteCandle.getClose() - 0.20;
+							double rangoSuperiorBuy = pivoteCandle.getClose() + 0.20;
+							
+							if( currentCandleItem.getClose() < rangoInferiorSell ){
 								// El stock sobrepaso los 20 centavos a la baja
-								System.out.println(getSymbol() + " sobrepaso 20 centavos a la baja. SELL");
+								_log.info(getSymbol() + " sobrepaso 20 centavos a la baja. SELL");
 								Money limitPrice = new Money( currentCandleItem.getLow() );
 								Money auxStopPrice = new Money(currentCandleItem.getLow()).add(new Money(0.10));
-								System.out.println(getSymbol() + " LIMIT PRICE " + limitPrice);
-								System.out.println(getSymbol() + " STOP PRICE " + auxStopPrice);
+								_log.info(getSymbol() + " LIMIT PRICE " + limitPrice);
+								_log.info(getSymbol() + " STOP PRICE " + auxStopPrice);
 								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
 										Action.SELL, OrderType.STPLMT, limitPrice, auxStopPrice, cantidadCompra, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
 								this.reFreshPositionOrders();
-								System.out.println(" * ******************************************** *");
+								_log.info(" * ******************************************** *");
 								return;
 							}
 							
-							if( diffHighs > 0.20 ){
-								System.out.println(getSymbol() + " sobrepaso 20 centavos hacia arriba. COMPRAR");
+							if( currentCandleItem.getClose() > rangoSuperiorBuy){
+								_log.info(getSymbol() + " sobrepaso 20 centavos hacia arriba. COMPRAR");
 								Money limitPrice = new Money( currentCandleItem.getHigh() );
 								Money auxStopPrice = new Money(currentCandleItem.getHigh()).subtract(new Money(0.10));
-								System.out.println(getSymbol() + " LIMIT PRICE " + limitPrice);
-								System.out.println(getSymbol() + " STOP PRICE " + auxStopPrice);
+								_log.info(getSymbol() + " LIMIT PRICE " + limitPrice);
+								_log.info(getSymbol() + " STOP PRICE " + auxStopPrice);
 								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
 										Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, cantidadCompra, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
 								this.reFreshPositionOrders();
-								System.out.println(" * ******************************************** *");
+								_log.info(" * ******************************************** *");
 								return;
 							}
 							
@@ -246,7 +256,7 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 						return;
 					}
 					
-					if( diffLows < 0.05 && diffHighs < 0.15 ){
+					if( currentCandleItem.getClose() > rangoInferior && currentCandleItem.getClose() < rangoSuperior ){
 						// Esta en el rango de valores deseados
 						if( diffMinutes > 20 ){
 							// Ya han pasado mas de 20 minutos y el valor se sigue conservando
@@ -255,20 +265,18 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 							stocksPivoting.put( getSymbol() , pivote);
 						}else{
 							//Conservamos el pivote, aun no se llega al tiempo limite
-							System.out.println("CONSERVANDO PIVOTE, SIGUE EN OBSERVACION ");
+							_log.info("CONSERVANDO PIVOTE, SIGUE EN OBSERVACION ");
 							pivote.setCandidato(false);
 							stocksPivoting.put( getSymbol() , pivote);
 						}
 					}else{
 						// Esta fuera del rango de valores deseados, cambiamos el pivote al currentCandle
-						System.out.println("CAMBIANDO PIVOTE");
+						_log.info("CAMBIANDO PIVOTE");
 						pivote.setPivote(currentCandleItem);
 						pivote.setCandidato(false);
 						stocksPivoting.put( getSymbol() , pivote);
 					}
-					
-					System.out.println(" * ******************************************** *");
-				
+					_log.info(" * ******************************************** *");
 				}catch(Exception ex) {
 					_log.error("Error  runRule exception: " + ex.getMessage(), ex);
 					error(1, 10, "Error  runRule exception: " + ex.getMessage());

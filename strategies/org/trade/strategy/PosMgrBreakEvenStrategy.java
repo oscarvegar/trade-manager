@@ -73,7 +73,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 	
 	private PersistentModel tradePersistentModel;
 
-	private static int QuantityShares = 1;
+	private static int QuantityShares;
 	
 	private double LastAuxStopPrice;
 
@@ -116,12 +116,15 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 	 */
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
+		_log.info("Inside PosMgrBreakEvenStrategy.runStrategy::" + this.getSymbol());
+		
 		try {
 			// Get the current candle
 			CandleItem currentCandleItem = (CandleItem) candleSeries
 					.getDataItem(getCurrentCandleCount());
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod()
 					.getStart();
+			QuantityShares = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
 
 			// _log.info(getTradestrategy().getStrategy().getClassName()
 			// + " symbol: " + getSymbol() + " startPeriod: "
@@ -152,8 +155,8 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 				}
 				
 				double lastAuxStopPrice = this.getOpenPositionOrder().getAuxPrice().doubleValue();
-				if(currentCandleItem.getLow() > prevCandleItem.getLow() 
-						&& currentCandleItem.getLow() >= addAPercentToANumber(lastAuxStopPrice, 50)) {
+				if(currentCandleItem.getClose() > prevCandleItem.getClose() 
+						&& currentCandleItem.getClose() >= addAPercentToANumber(lastAuxStopPrice, 50)) {
 					/*
 					Money stopPrice = addPennyAndRoundStop(this
 							.getOpenPositionOrder().getAverageFilledPrice()
@@ -189,6 +192,9 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException
 				| InstantiationException | IllegalAccessException | NoSuchMethodException
 				| InvocationTargetException | IOException ex) {
+			_log.error("Error  runRule exception: " + ex.getMessage(), ex);
+			error(1, 10, "Error  runRule exception: " + ex.getMessage());
+		} catch (Exception ex) {
 			_log.error("Error  runRule exception: " + ex.getMessage(), ex);
 			error(1, 10, "Error  runRule exception: " + ex.getMessage());
 		}

@@ -77,7 +77,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 	
 	private PersistentModel tradePersistentModel;
 
-	private static int QuantityShares = 100;
+	private static int QuantityShares;
 	
 	private boolean StrategyOK = false;
 	private CandleItem CandlePositionA;
@@ -141,11 +141,14 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 	 */
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
+		_log.info("Inside DoubleBottomStrategy.runStrategy::" + this.getSymbol());
+		
 		try {
 			// Get the current candle
 			CandleItem currentCandleItem = this.getCurrentCandle();
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod()
 					.getStart();
+			QuantityShares = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
 
 			/*
 			 * Position is open kill this Strategy as its job is done. In this
@@ -196,7 +199,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 
 			if (startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().minusSeconds(1))
 					&& startPeriod.isBefore(this.getTradestrategy().getTradingday().getClose().plusSeconds(1))
-					&& newBar) {
+					) {	// && newBar
 
 				/*
 				 * Example On start of the second (9:35) candle check the 9:30
@@ -211,7 +214,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 					Candle currentCandle = currentCandleItem.getCandle();
 					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
 					
-					if(currentCandle.getLow().doubleValue() == prevDayCandle.getLow().doubleValue()) {
+					if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {
 						CandlePositionA = currentCandleItem;	// Asignamos el punto A
 					}
 				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35))
@@ -225,7 +228,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 						Candle currentCandle = currentCandleItem.getCandle();
 						Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
 						
-						if(currentCandle.getLow().doubleValue() == prevDayCandle.getLow().doubleValue()) {
+						if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {
 							CandlePositionB = currentCandleItem;	// Asignamos el punto B
 						/*
 						} else if(currentCandle.getLow().doubleValue() >= addAPercentToANumber(prevDayCandle.getLow().doubleValue(), 1)) {
@@ -244,23 +247,23 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 						return;
 					} else if(CandlePositionB != null) {
 						
-						if(currentCandleItem.getLow() <= substractAPercentToANumber(CandlePositionB.getLow(), 1)) {	// Validamos si hubo un decremento sobre la posicion B en 1%
+						if(currentCandleItem.getClose() <= substractAPercentToANumber(CandlePositionB.getClose(), 1)) {	// Validamos si hubo un decremento sobre la posicion B en 1%
 							
 							if(LastLowDecrease == null) {	// Asignamos el valor del decremento al punto C 
-								LastLowDecrease = currentCandleItem.getLow();
+								LastLowDecrease = currentCandleItem.getClose();
 								CandlePositionC = currentCandleItem;
 							} else {
-								if(currentCandleItem.getLow() <= substractAPercentToANumber(CandlePositionC.getLow(), 1)) {	// Validamos si hubo un decremento sobre la posicion en C en 1%
-									LastLowDecrease = currentCandleItem.getLow();
+								if(currentCandleItem.getClose() <= substractAPercentToANumber(CandlePositionC.getClose(), 1)) {	// Validamos si hubo un decremento sobre la posicion en C en 1%
+									LastLowDecrease = currentCandleItem.getClose();
 									CandlePositionC = currentCandleItem;
-								} else if(currentCandleItem.getLow() >= substractAPercentToANumber(CandlePositionC.getLow(), 1)
-										&& currentCandleItem.getLow() >= addAPercentToANumber(CandlePositionC.getLow(), 1)) {	// Validamos si hubo un incremento sobre la posicion en C en 1%
+								} else if(currentCandleItem.getClose() >= substractAPercentToANumber(CandlePositionC.getClose(), 1)
+										&& currentCandleItem.getClose() >= addAPercentToANumber(CandlePositionC.getClose(), 1)) {	// Validamos si hubo un incremento sobre la posicion en C en 1%
 
-									LastLowDecrease = currentCandleItem.getLow();
+									LastLowDecrease = currentCandleItem.getClose();
 									CandlePositionC = currentCandleItem;
 
-									Money auxStopPrice = new Money(CandlePositionC.getLow()).subtract(new Money(0.04));
-									Money limitPrice = new Money(CandlePositionC.getLow());
+									Money auxStopPrice = new Money(CandlePositionC.getClose()).subtract(new Money(0.04));
+									Money limitPrice = new Money(CandlePositionC.getClose());
 									LastAuxStopPrice = auxStopPrice.doubleValue();
 									
 									TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
@@ -270,10 +273,10 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 							}
 							
 						} else {
-							if(currentCandleItem.getLow() >= addAPercentToANumber(CandlePositionB.getLow(), 1)) {	// Validamos si hubo un incremento sobre la posicion B en 1%
+							if(currentCandleItem.getClose() >= addAPercentToANumber(CandlePositionB.getClose(), 1)) {	// Validamos si hubo un incremento sobre la posicion B en 1%
 
-								Money auxStopPrice = new Money(CandlePositionB.getLow()).subtract(new Money(0.04));
-								Money limitPrice = new Money(CandlePositionB.getLow());
+								Money auxStopPrice = new Money(CandlePositionB.getClose()).subtract(new Money(0.04));
+								Money limitPrice = new Money(CandlePositionB.getClose());
 								LastAuxStopPrice = auxStopPrice.doubleValue();
 								
 								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
@@ -304,6 +307,9 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException
 				| InstantiationException | IllegalAccessException | NoSuchMethodException
 				| InvocationTargetException | IOException ex) {
+			_log.error("Error  runRule exception: " + ex.getMessage(), ex);
+			error(1, 10, "Error  runRule exception: " + ex.getMessage());
+		} catch (Exception ex) {
 			_log.error("Error  runRule exception: " + ex.getMessage(), ex);
 			error(1, 10, "Error  runRule exception: " + ex.getMessage());
 		}

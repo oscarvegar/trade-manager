@@ -104,6 +104,7 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 					.getDataItem(getCurrentCandleCount());
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod()
 					.getStart();
+//			QuantityShares = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
 
 			// _log.info(getTradestrategy().getStrategy().getClassName()
 			// + " symbol: " + getSymbol() + " startPeriod: "

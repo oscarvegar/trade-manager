@@ -80,7 +80,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	
 	private PersistentModel tradePersistentModel;
 
-	private static int QuantityShares = 100;
+	private static int QuantityShares;
 	
 	private boolean StrategyOK = false;
 	
@@ -139,11 +139,16 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	 */
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
+		_log.info("Inside BreakEvenStrategy.runStrategy::" + this.getSymbol());
+		
 		try {
 			// Get the current candle
 			CandleItem currentCandleItem = this.getCurrentCandle();
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod()
 					.getStart();
+//			QuantityShares = this.getTradestrategy().getCodeValues().get(0).getCodeValue();
+//			QuantityShares = this.getTradestrategy().getCodeValues().get(0).getCodeAttribute().getDefaultValue();
+			QuantityShares = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
 
 			/*
 			 * Position is open kill this Strategy as its job is done. In this
@@ -194,7 +199,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 
 			if (startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().minusSeconds(1))
 					&& startPeriod.isBefore(this.getTradestrategy().getTradingday().getClose().plusSeconds(1))
-					&& newBar) {
+					) {	// && newBar
 
 				/*
 				 * Example On start of the second (9:35) candle check the 9:30
@@ -210,13 +215,13 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 					Candle currentCandle = currentCandleItem.getCandle();
 					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
 					
-					if(currentCandle.getLow().doubleValue() == prevDayCandle.getLow().doubleValue()) {	// Validamos que el valor actual de LOW sea igual al de P
+					if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {	// Validamos que el valor actual de LOW sea igual al de P
 						StrategyOK = Boolean.TRUE;
 						
 						if(!this.isThereOpenPosition()) {	// Siempre que no haya una orden abierta ...
 							//Money auxStopPrice = new Money(prevDayCandle.getLow());
-							Money auxStopPrice = new Money(prevDayCandle.getLow()).subtract(new Money(0.04));
-							Money limitPrice = new Money(prevDayCandle.getLow());
+							Money auxStopPrice = new Money(prevDayCandle.getClose()).subtract(new Money(0.04));
+							Money limitPrice = new Money(prevDayCandle.getClose());
 							LastAuxStopPrice = auxStopPrice.doubleValue();
 							
 							TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
@@ -259,8 +264,8 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 
 					this.reFreshPositionOrders();
 					// double lastAuxStopPrice = this.getOpenPositionOrder().getAuxPrice().doubleValue();
-					if(currentCandleItem.getLow() > prevCandleItem.getLow() 
-							&& currentCandleItem.getLow() >= addAPercentToANumber(LastAuxStopPrice, 50)) {
+					if(currentCandleItem.getClose() > prevCandleItem.getClose() 
+							&& currentCandleItem.getClose() >= addAPercentToANumber(LastAuxStopPrice, 50)) {
 						/*
 						 * Validamos que haya un incremento en LOW entre la
 						 * posicion actual y la posicion anterior del dia; y
@@ -309,6 +314,9 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException
 				| InstantiationException | IllegalAccessException | NoSuchMethodException
 				| InvocationTargetException | IOException ex) {
+			_log.error("Error  runRule exception: " + ex.getMessage(), ex);
+			error(1, 10, "Error  runRule exception: " + ex.getMessage());
+		} catch (Exception ex) {
 			_log.error("Error  runRule exception: " + ex.getMessage(), ex);
 			error(1, 10, "Error  runRule exception: " + ex.getMessage());
 		}

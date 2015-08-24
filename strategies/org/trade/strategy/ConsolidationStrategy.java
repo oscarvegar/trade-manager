@@ -75,7 +75,6 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 	
 	private static Map<String, CandleItem> stocksInRevision = new ConcurrentHashMap<String, CandleItem>();
 	private static Map<String, CandlePivote> stocksPivoting = new ConcurrentHashMap<String, CandlePivote>();
-	private static int cantidadCompra = 1;
 	private final static Logger _log = LoggerFactory
 			.getLogger(ConsolidationStrategy.class);
 	private PersistentModel tradePersistentModel;
@@ -231,6 +230,7 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 								Money auxStopPrice = new Money(currentCandleItem.getLow()).add(new Money(0.10));
 								_log.info(getSymbol() + " LIMIT PRICE " + limitPrice);
 								_log.info(getSymbol() + " STOP PRICE " + auxStopPrice);
+								int cantidadCompra = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
 								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
 										Action.SELL, OrderType.STPLMT, limitPrice, auxStopPrice, cantidadCompra, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
 								this.reFreshPositionOrders();
@@ -244,6 +244,7 @@ public class ConsolidationStrategy extends AbstractStrategyRule {
 								Money auxStopPrice = new Money(currentCandleItem.getHigh()).subtract(new Money(0.10));
 								_log.info(getSymbol() + " LIMIT PRICE " + limitPrice);
 								_log.info(getSymbol() + " STOP PRICE " + auxStopPrice);
+								int cantidadCompra = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
 								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
 										Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, cantidadCompra, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
 								this.reFreshPositionOrders();

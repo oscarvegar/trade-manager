@@ -160,14 +160,14 @@ public class TradestrategyTable extends Table {
 		StringRenderer rString = new StringRenderer();
 		this.setDefaultRenderer(String.class, rString);
 		this.setDefaultEditor(DAOStrategy.class, strategyEditor);
-		this.setDefaultEditor(DAOStrategyManager.class, strategyManagerEditor);
+		//this.setDefaultEditor(DAOStrategyManager.class, strategyManagerEditor);
 		this.setDefaultEditor(DAOPortfolio.class, portfolioEditor);
 		this.setDefaultEditor(Currency.class, currencyEditor);
 		this.setDefaultEditor(Exchange.class, exchangeEditor);
 		this.setDefaultEditor(SECIdType.class, sECIdTypeEditor);
 		this.setDefaultEditor(SECType.class, sECTypeEditor);
 		this.setDefaultEditor(Side.class, sideEditor);
-		this.setDefaultEditor(Tier.class, tierEditor);
+		//this.setDefaultEditor(Tier.class, tierEditor);
 		this.setDefaultEditor(TradestrategyStatus.class,
 				tradestrategyStatusEditor);
 		this.setDefaultRenderer(DAOStrategy.class, dAOStrategyRenderer);

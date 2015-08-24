@@ -173,8 +173,10 @@ public class TradestrategyTable extends Table {
 		this.setDefaultRenderer(DAOStrategy.class, dAOStrategyRenderer);
 		this.setDefaultRenderer(DAOStrategyManager.class,
 				dAOStrategyManagerRenderer);
-		this.setDefaultEditor(ChartDays.class, chartDaysEditor);
 		this.setDefaultEditor(BarSize.class, barSizeEditor);
+		this.setDefaultEditor(ChartDays.class, chartDaysEditor);
+		this.setDefaultEditor(DAOStrategyManager.class, strategyManagerEditor);
+		
 		this.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		this.setPreferredScrollableViewportSize(new Dimension(300, 200));
 		this.setFillsViewportHeight(true);

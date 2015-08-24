@@ -135,7 +135,7 @@ public class TradestrategyTableModel extends TableModel {
 	public TradestrategyTableModel() {
 		super(columnHeaderToolTip);
 		//columnNames = new String[18];
-		columnNames = new String[16];
+		columnNames = new String[17];
 		columnNames[0] = DATE;
 		columnNames[1] = TRADE;
 		columnNames[2] = SYMBOL;
@@ -154,6 +154,7 @@ public class TradestrategyTableModel extends TableModel {
 		columnNames[13] = EXCHANGE;
 		columnNames[14] = BAR_SIZE;
 		columnNames[15] = CHART_DAYS;
+		columnNames[16] = STRATEGY_MGR;
 		/*
 		 * Create a 5sec timer to refresh the data this is used for the % chg,
 		 * strategy and status fields.
@@ -173,6 +174,8 @@ public class TradestrategyTableModel extends TableModel {
 					
 					//fireTableCellUpdated(i, 13);
 					fireTableCellUpdated(i, 8);
+					
+					fireTableCellUpdated(i, 16);
 				}
 			}
 		});
@@ -207,7 +210,7 @@ public class TradestrategyTableModel extends TableModel {
 		}
 
 		if ((columnNames[column] == DATE)
-				//|| (columnNames[column] == STRATEGY_MGR)
+				|| (columnNames[column] == STRATEGY_MGR)
 				|| (columnNames[column] == PERCENTCHGFRCLOSE)
 				|| (columnNames[column] == PERCENTCHGFROPEN)
 				|| (columnNames[column] == STATUS)) {
@@ -380,11 +383,11 @@ public class TradestrategyTableModel extends TableModel {
 			element.setChartDays(new Integer(((ChartDays) value).getCode()));
 			break;
 		}
-//		case 16: {
+		case 16: {
 //			element.getContract().setSecType(((SECType) value).getCode());
-//			
-//			break;
-//		}
+			element.getStrategy().setStrategyManager((Strategy) ((DAOStrategyManager) value).getObject());
+			break;
+		}
 //		case 17: {
 //			ZonedDateTime zonedDateTime = ((Date) value).getZonedDateTime();
 //			zonedDateTime = zonedDateTime.plusMonths(1);
@@ -571,7 +574,12 @@ public class TradestrategyTableModel extends TableModel {
 		newRow.addElement(BarSize.newInstance(element.getBarSize()));
 		newRow.addElement(ChartDays.newInstance(element.getChartDays()));
 		
-		
+		if (element.getStrategy().hasStrategyManager()) {
+			newRow.addElement(DAOStrategyManager.newInstance(element
+					.getStrategy().getStrategyManager().getName()));
+		} else {
+			newRow.addElement(DAOStrategyManager.newInstance(Decode.NONE));
+		}
 		
 		/*
 		if (null == element.getTier()) {
@@ -579,12 +587,7 @@ public class TradestrategyTableModel extends TableModel {
 		} else {
 			newRow.addElement(Tier.newInstance(element.getTier()));
 		}
-		if (element.getStrategy().hasStrategyManager()) {
-			newRow.addElement(DAOStrategyManager.newInstance(element
-					.getStrategy().getStrategyManager().getName()));
-		} else {
-			newRow.addElement(DAOStrategyManager.newInstance(Decode.NONE));
-		}
+		
 		 */
 		
 	}

@@ -79,14 +79,14 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 
 	private static int QuantityShares;
 	
-	private boolean StrategyOK = false;
+	// private boolean StrategyOK = false;
 	private CandleItem CandlePositionA;
 	private CandleItem CandlePositionB;
 	private CandleItem CandlePositionC;
 	
-	private Double LastAuxStopPrice;
+	// private Double LastAuxStopPrice;
 	private Double LastLowDecrease;
-	private Double LastLowIncrease;
+	// private Double LastLowIncrease;
 
 	/**
 	 * Default Constructor Note if you use class variables remember these will
@@ -139,6 +139,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 	 * @see org.trade.strategy.AbstractStrategyRule#runStrategy(CandleSeries,
 	 *      boolean)
 	 */
+	@SuppressWarnings("unused")
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
 		_log.info("Inside DoubleBottomStrategy.runStrategy::" + this.getSymbol());
@@ -264,7 +265,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 
 									Money auxStopPrice = new Money(CandlePositionC.getClose()).subtract(new Money(0.04));
 									Money limitPrice = new Money(CandlePositionC.getClose());
-									LastAuxStopPrice = auxStopPrice.doubleValue();
+									// LastAuxStopPrice = auxStopPrice.doubleValue();
 									
 									TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
 											Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
@@ -277,7 +278,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 
 								Money auxStopPrice = new Money(CandlePositionB.getClose()).subtract(new Money(0.04));
 								Money limitPrice = new Money(CandlePositionB.getClose());
-								LastAuxStopPrice = auxStopPrice.doubleValue();
+								// LastAuxStopPrice = auxStopPrice.doubleValue();
 								
 								TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
 										Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c

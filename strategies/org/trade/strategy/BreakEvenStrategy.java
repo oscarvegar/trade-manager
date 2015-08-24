@@ -37,7 +37,6 @@ package org.trade.strategy;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -46,12 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trade.broker.BrokerModel;
 import org.trade.core.factory.ClassFactory;
-import org.trade.core.util.TradingCalendar;
 import org.trade.core.valuetype.Money;
 import org.trade.dictionary.valuetype.Action;
 import org.trade.dictionary.valuetype.OrderStatus;
 import org.trade.dictionary.valuetype.OrderType;
-import org.trade.dictionary.valuetype.Side;
 import org.trade.dictionary.valuetype.TradestrategyStatus;
 import org.trade.persistent.PersistentModel;
 import org.trade.persistent.PersistentModelException;
@@ -137,6 +134,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	 * @see org.trade.strategy.AbstractStrategyRule#runStrategy(CandleSeries,
 	 *      boolean)
 	 */
+	@SuppressWarnings("unused")
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
 		_log.info("Inside BreakEvenStrategy.runStrategy::" + this.getSymbol());
@@ -248,7 +246,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 					return;
 				} else if(StrategyOK) {	// Si se ejecuto la estrategia...
 					
-					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);
+					// Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);
 
 					/*
 					 * Is the candle in the direction of the Tradestrategy side i.e.

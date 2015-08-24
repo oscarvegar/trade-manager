@@ -114,6 +114,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 	 *            boolean
 	 * @see org.trade.strategy.StrategyRule#runStrategy(CandleSeries, boolean)
 	 */
+	@SuppressWarnings("unused")
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
 		_log.info("Inside PosMgrBreakEvenStrategy.runStrategy::" + this.getSymbol());

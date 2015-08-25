@@ -137,7 +137,8 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	@SuppressWarnings("unused")
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
-		_log.info("Inside BreakEvenStrategy.runStrategy::" + this.getSymbol());
+		_log.info("Inside BreakEvenStrategy.runStrategy::" + this.getSymbol() + "_at_"
+				+ this.getCurrentCandle().getPeriod().getStart());
 		
 		try {
 			// Get the current candle

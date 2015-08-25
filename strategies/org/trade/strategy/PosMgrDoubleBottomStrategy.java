@@ -75,12 +75,13 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 	private static int QuantityShares;
 	
 	// private boolean StrategyOK = false;
-	private CandleItem CandlePositionA;
-	private CandleItem CandlePositionB;
-	private CandleItem CandlePositionC;
+	// private CandleItem CandlePositionA;
+	// private CandleItem CandlePositionB;
+	// private CandleItem CandlePositionBC;
+	// private CandleItem CandlePositionC;
 	
 	// private Double LastAuxStopPrice;
-	private Double LastLowDecrease;
+	// private Double LastLowDecrease;
 	// private Double LastLowIncrease;
 
 	/**
@@ -123,6 +124,9 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 	@SuppressWarnings("unused")
 	public void runStrategy(CandleSeries candleSeries, boolean newBar) {
 
+		_log.info("Inside PosMgrDoubleBottomStrategy.runStrategy::" + this.getSymbol() + "_at_"
+				+ this.getCurrentCandle().getPeriod().getStart());
+
 		try {
 			// Get the current candle
 			CandleItem currentCandleItem = (CandleItem) candleSeries
@@ -153,91 +157,30 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 					) {	// && newBar
 
 				/*
-				 * Example On start of the second (9:35) candle check the 9:30
-				 * candle and buy over under in the direction of the bar.
-				 * 
-				 * 
-				 * Validamos que no hayan pasado 35min y que la posion A no haya sido asiganda
+				 * Is the candle in the direction of the Tradestrategy side i.e.
+				 * a long play should have a green 5min candle
 				 */
-				if(startPeriod.isBefore(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35).plusSeconds(1))
-						&& CandlePositionA == null) {
+				CandleItem prevCandleItem = null;
+				if (getCurrentCandleCount() > 0) {
+					prevCandleItem = (CandleItem) candleSeries
+							.getDataItem(getCurrentCandleCount() - 1);
+					// AbstractStrategyRule
+					// .logCandle(this, prevCandleItem.getCandle());
+				}
+				
+				double lastAuxStopPrice = this.getOpenPositionOrder().getAuxPrice().doubleValue();
+				if(currentCandleItem.getClose() > prevCandleItem.getClose()
+						&& currentCandleItem.getClose() >= addAPercentToANumber(lastAuxStopPrice, 50)) {
+
+					Money auxStopPrice = new Money(addAPercentToANumber(lastAuxStopPrice, 50))
+							.subtract(new Money(0.04));
+					Money limitPrice = new Money(addAPercentToANumber(lastAuxStopPrice, 50));
 					
-					Candle currentCandle = currentCandleItem.getCandle();
-					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
+					TradeOrder tradeOrder = this.updateOrder(this.getOpenPositionOrder().getOrderKey(),
+							Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares,
+							false, true);
+					this.reFreshPositionOrders();
 					
-					if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {
-						CandlePositionA = currentCandleItem;	// Asignamos el punto A
-					}
-				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35))
-						&& CandlePositionA == null) {	// Si pasaron mas de 35min y la posicion A no fue asiganda, entonces cancelamos la estrategia
-					this.cancel();
-					return;
-				} else if(CandlePositionA != null) {
-					if(startPeriod.isBefore(CandlePositionA.getPeriod().getStart().plusMinutes(50).plusSeconds(1))
-							&& CandlePositionB == null) {	// Validamos que no hayan pasado mas de 50min a partir del punto A y que la posicion B no haya sido asiganda
-						
-						Candle currentCandle = currentCandleItem.getCandle();
-						Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
-						
-						if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {
-							CandlePositionB = currentCandleItem;	// Asignamos el punto B
-						/*
-						} else if(currentCandle.getLow().doubleValue() >= addAPercentToANumber(prevDayCandle.getLow().doubleValue(), 1)) {
-
-							Money auxStopPrice = new Money(prevDayCandle.getLow()).subtract(new Money(0.04));
-							Money limitPrice = new Money(prevDayCandle.getLow()).subtract(new Money(0.04));
-							LastAuxStopPrice = auxStopPrice.doubleValue();
-							
-							TradeOrder tradeOrder = this.createOrder(this.getTradestrategy().getContract(),
-									Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);
-						*/
-						}
-					} else if(startPeriod.isAfter(CandlePositionA.getPeriod().getStart().plusMinutes(50))
-							&& CandlePositionB == null) {	// Si pasaron mas de 50min y la posicion B no fue asiganda, entonces cancelamos la estrategia
-						this.cancel();
-						return;
-					} else if(CandlePositionB != null) {
-						
-						if(currentCandleItem.getClose() <= substractAPercentToANumber(CandlePositionB.getClose(), 1)) {	// Validamos si hubo un decremento sobre la posicion B en 1%
-							
-							if(LastLowDecrease == null) {	// Asignamos el valor del decremento al punto C 
-								LastLowDecrease = currentCandleItem.getClose();
-								CandlePositionC = currentCandleItem;
-							} else {
-								if(currentCandleItem.getClose() <= substractAPercentToANumber(CandlePositionC.getClose(), 1)) {	// Validamos si hubo un decremento sobre la posicion en C en 1%
-									LastLowDecrease = currentCandleItem.getClose();
-									CandlePositionC = currentCandleItem;
-								} else if(currentCandleItem.getClose() >= substractAPercentToANumber(CandlePositionC.getClose(), 1)
-										&& currentCandleItem.getClose() >= addAPercentToANumber(CandlePositionC.getClose(), 1)) {	// Validamos si hubo un incremento sobre la posicion en C en 1%
-
-									LastLowDecrease = currentCandleItem.getClose();
-									CandlePositionC = currentCandleItem;
-
-									Money auxStopPrice = new Money(CandlePositionC.getClose()).subtract(new Money(0.04));	// Calculo del STPLMT
-									Money limitPrice = new Money(CandlePositionC.getClose());
-									//LastAuxStopPrice = auxStopPrice.doubleValue();
-									
-									TradeOrder tradeOrder = this.updateOrder(this.getOpenPositionOrder().getOrderKey(),
-											Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
-									this.reFreshPositionOrders();
-									
-								}
-							}
-							
-						} else {
-							if(currentCandleItem.getClose() >= addAPercentToANumber(CandlePositionB.getClose(), 1)) {	// Validamos si hubo un incremento sobre la posicion B en 1%
-
-								Money auxStopPrice = new Money(CandlePositionB.getClose()).subtract(new Money(0.04));
-								Money limitPrice = new Money(CandlePositionB.getClose());
-								//LastAuxStopPrice = auxStopPrice.doubleValue();
-								
-								TradeOrder tradeOrder = this.updateOrder(this.getOpenPositionOrder().getOrderKey(),
-										Action.BUY, OrderType.STPLMT, limitPrice, auxStopPrice, QuantityShares, false, true);	// Creamos y transmitimos una orden BUY, STPLMT = LOW - 4c
-								this.reFreshPositionOrders();
-								
-							}
-						}
-					}
 				}
 				
 			}

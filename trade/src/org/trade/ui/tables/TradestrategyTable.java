@@ -1,5 +1,5 @@
 /* ===========================================================
- * Smart Trade System: a application to trade strategies for the Java(tm) platform
+ * TradeManager : a application to trade strategies for the Java(tm) platform
  * ===========================================================
  *
  * (C) Copyright 2011-2011, by Simon Allen and Contributors.
@@ -160,23 +160,21 @@ public class TradestrategyTable extends Table {
 		StringRenderer rString = new StringRenderer();
 		this.setDefaultRenderer(String.class, rString);
 		this.setDefaultEditor(DAOStrategy.class, strategyEditor);
-		//this.setDefaultEditor(DAOStrategyManager.class, strategyManagerEditor);
+		this.setDefaultEditor(DAOStrategyManager.class, strategyManagerEditor);
 		this.setDefaultEditor(DAOPortfolio.class, portfolioEditor);
 		this.setDefaultEditor(Currency.class, currencyEditor);
 		this.setDefaultEditor(Exchange.class, exchangeEditor);
 		this.setDefaultEditor(SECIdType.class, sECIdTypeEditor);
 		this.setDefaultEditor(SECType.class, sECTypeEditor);
 		this.setDefaultEditor(Side.class, sideEditor);
-		//this.setDefaultEditor(Tier.class, tierEditor);
+		this.setDefaultEditor(Tier.class, tierEditor);
 		this.setDefaultEditor(TradestrategyStatus.class,
 				tradestrategyStatusEditor);
 		this.setDefaultRenderer(DAOStrategy.class, dAOStrategyRenderer);
 		this.setDefaultRenderer(DAOStrategyManager.class,
 				dAOStrategyManagerRenderer);
-		this.setDefaultEditor(BarSize.class, barSizeEditor);
 		this.setDefaultEditor(ChartDays.class, chartDaysEditor);
-		this.setDefaultEditor(DAOStrategyManager.class, strategyManagerEditor);
-		
+		this.setDefaultEditor(BarSize.class, barSizeEditor);
 		this.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		this.setPreferredScrollableViewportSize(new Dimension(300, 200));
 		this.setFillsViewportHeight(true);

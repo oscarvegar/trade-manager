@@ -157,7 +157,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 				}
 				
 				double lastAuxStopPrice = this.getOpenPositionOrder().getAuxPrice().doubleValue();
-				if(currentCandleItem.getClose() > prevCandleItem.getClose() 
+				if(currentCandleItem.getClose() > prevCandleItem.getClose()
 						&& currentCandleItem.getClose() >= addAPercentToANumber(lastAuxStopPrice, 50)) {
 					/*
 					Money stopPrice = addPennyAndRoundStop(this
@@ -229,10 +229,11 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 		if(DayOfWeek.MONDAY.equals((startPeriod.getDayOfWeek()))) {
 			days = 3;
 		}
-		
+
+		ZonedDateTime newStartPeriod = this.getTradestrategy().getTradingday().getOpen();
 		List<Candle> candleList = this.tradePersistentModel.findCandlesByContractDateRangeBarSize(
-				candleSeries.getContract().getIdContract(), startPeriod.minusDays(days).minusMinutes(10),
-				startPeriod.minusDays(days).minusMinutes(10), candleSeries.getBarSize());
+				candleSeries.getContract().getIdContract(), newStartPeriod.minusDays(days),
+				newStartPeriod.minusDays(days), candleSeries.getBarSize());
 		
 		if(candleList.size() > 0) {
 			prevCandle = candleList.get(0);
@@ -250,7 +251,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 	public double getPercentOfANumber(double number, int percent) {
 		double percentOfNumber = 0.0;
 		
-		percentOfNumber = number * (percent / 100);
+		percentOfNumber = number * (percent / (double) 100);
 		
 		return percentOfNumber;
 	}
@@ -278,7 +279,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 	public double substractAPercentToANumber(double number, int percent) {
 		double numberMinusPercent = 0.0;
 		
-		numberMinusPercent = number * (1 - (percent / 100));
+		numberMinusPercent = number * ((double) 1 - (percent / (double) 100));
 		
 		return numberMinusPercent;
 	}

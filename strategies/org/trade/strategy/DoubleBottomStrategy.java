@@ -294,7 +294,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 			/*
 			 * Close any opened positions with a market order at day end minus
 			 * one bar.
-			 */
+			 *
 			if (!currentCandleItem.getLastUpdateDate().isBefore(
 					this.getTradestrategy()
 							.getTradingday()
@@ -306,6 +306,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 						+ getSymbol() + " Time: " + startPeriod);
 				this.cancel();
 			}
+             */
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException
 				| InstantiationException | IllegalAccessException | NoSuchMethodException
 				| InvocationTargetException | IOException ex) {

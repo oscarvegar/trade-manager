@@ -182,7 +182,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 			/*
 			 * Close any opened positions with a market order at the end of the
 			 * day.
-			 */
+			 *
 			if (!currentCandleItem.getLastUpdateDate().isBefore(
 					this.getTradestrategy().getTradingday().getClose()
 							.minusMinutes(2))) {
@@ -191,6 +191,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 						+ getSymbol() + " Time: " + startPeriod);
 				this.cancel();
 			}
+             */
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException
 				| InstantiationException | IllegalAccessException | NoSuchMethodException
 				| InvocationTargetException | IOException ex) {
@@ -229,7 +230,7 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 		if(DayOfWeek.MONDAY.equals((startPeriod.getDayOfWeek()))) {
 			days = 3;
 		}
-
+		
 		ZonedDateTime newStartPeriod = this.getTradestrategy().getTradingday().getOpen();
 		List<Candle> candleList = this.tradePersistentModel.findCandlesByContractDateRangeBarSize(
 				candleSeries.getContract().getIdContract(), newStartPeriod.minusDays(days),

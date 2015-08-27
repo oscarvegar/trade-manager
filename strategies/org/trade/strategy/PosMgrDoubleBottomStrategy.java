@@ -61,6 +61,7 @@ import org.trade.strategy.data.candle.CandleItem;
  * 
  * @version $Revision: 1.0 $
  */
+
 public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 
 	/**
@@ -188,7 +189,7 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 			/*
 			 * Close any opened positions with a market order at the end of the
 			 * day.
-			 */
+			 *
 			if (!currentCandleItem.getLastUpdateDate().isBefore(
 					this.getTradestrategy().getTradingday().getClose()
 							.minusMinutes(2))) {
@@ -197,6 +198,7 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 						+ getSymbol() + " Time: " + startPeriod);
 				this.cancel();
 			}
+			 */
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException | InstantiationException
 				| IllegalAccessException | NoSuchMethodException | InvocationTargetException | IOException ex) {
 			_log.error("Error  runRule exception: " + ex.getMessage(), ex);

@@ -298,7 +298,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 			/*
 			 * Close any opened positions with a market order at day end minus
 			 * one bar.
-			 */
+			 *
 			if (!currentCandleItem.getLastUpdateDate().isBefore(
 					this.getTradestrategy()
 							.getTradingday()
@@ -310,6 +310,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 						+ getSymbol() + " Time: " + startPeriod);
 				this.cancel();
 			}
+             */
 		} catch (StrategyRuleException | PersistentModelException | ClassNotFoundException
 				| InstantiationException | IllegalAccessException | NoSuchMethodException
 				| InvocationTargetException | IOException ex) {
@@ -370,7 +371,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	public double getPercentOfANumber(double number, int percent) {
 		double percentOfNumber = 0.0;
 		
-		percentOfNumber = number * (percent / 100);
+		percentOfNumber = number * (percent / (double) 100);
 		
 		return percentOfNumber;
 	}
@@ -398,7 +399,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 	public double substractAPercentToANumber(double number, int percent) {
 		double numberMinusPercent = 0.0;
 		
-		numberMinusPercent = number * (1 - (percent / 100));
+		numberMinusPercent = number * ((double) 1 - (percent / (double) 100));
 		
 		return numberMinusPercent;
 	}

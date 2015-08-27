@@ -174,7 +174,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 				}
 				this.cancel();
 				return;
-			}
+			} else 
 
 			/*
 			 * Open position order was cancelled kill this Strategy as its job
@@ -187,7 +187,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 				updateTradestrategyStatus(TradestrategyStatus.CANCELLED);
 				this.cancel();
 				return;
-			}
+			} else {
 			
 			/*
 			 * Create code here to create orders based on your conditions/rules.
@@ -195,11 +195,11 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 			 *
 			 * Validamos que la estrategia solo se ejecute dentro del periodo de 9:30am a 15:00pm
 			 */
-
+			/*
 			if (startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().minusSeconds(1))
 					&& startPeriod.isBefore(this.getTradestrategy().getTradingday().getClose().plusSeconds(1))
 					) {	// && newBar
-
+			 */
 				/*
 				 * Example On start of the second (9:35) candle check the 9:30
 				 * candle and buy over under in the direction of the bar.

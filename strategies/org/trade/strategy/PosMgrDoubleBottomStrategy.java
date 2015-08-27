@@ -145,18 +145,18 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 						+ getSymbol() + " Time:" + startPeriod);
 				this.cancel();
 				return;
-			}
+			} else {
 
 			/* Is it the the 9:35 candle?
 			 * 
 			 * 
 			 * Validamos que la estrategia se ejecute en el periodo de 9:00am a 15:00pm
 			 */
-
+			/*
 			if (startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().minusSeconds(1))
 					&& startPeriod.isBefore(this.getTradestrategy().getTradingday().getClose().plusSeconds(1))
 					) {	// && newBar
-
+			 */
 				/*
 				 * Is the candle in the direction of the Tradestrategy side i.e.
 				 * a long play should have a green 5min candle

@@ -137,11 +137,11 @@ public class PosMgrBreakEvenStrategy extends AbstractStrategyRule {
 						+ getSymbol() + " Time:" + startPeriod);
 				this.cancel();
 				return;
-			}
-			
+			} else {
+			/*
 			if (startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen())
 					&& startPeriod.isBefore(this.getTradestrategy().getTradingday().getClose())) {
-				
+			 */
 				Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);
 
 				/*

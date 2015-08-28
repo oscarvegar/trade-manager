@@ -172,7 +172,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 						this.cancelOrder(this.getOpenPositionOrder());
 					}
 				}
-				this.cancel();
+				// this.cancel();
 				return;
 			} else 
 
@@ -185,7 +185,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 				_log.info("Strategy complete open position cancelled symbol: "
 						+ getSymbol() + " startPeriod: " + startPeriod);
 				updateTradestrategyStatus(TradestrategyStatus.CANCELLED);
-				this.cancel();
+				// this.cancel();
 				return;
 			} else {
 			
@@ -243,7 +243,7 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 					
 				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday()
 						.getOpen().plusMinutes(25)) && !StrategyOK) {	// Si han pasado 25min y no se cumplio la estrategia, cancelamos la ejecución
-					this.cancel();
+					// this.cancel();
 					return;
 				} else if(StrategyOK) {	// Si se ejecuto la estrategia...
 					

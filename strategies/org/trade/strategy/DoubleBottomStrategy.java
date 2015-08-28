@@ -175,7 +175,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 						this.cancelOrder(this.getOpenPositionOrder());
 					}
 				}
-				this.cancel();
+				// this.cancel();
 				return;
 			} else 
 
@@ -188,7 +188,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 				_log.info("Strategy complete open position cancelled symbol: "
 						+ getSymbol() + " startPeriod: " + startPeriod);
 				updateTradestrategyStatus(TradestrategyStatus.CANCELLED);
-				this.cancel();
+				// this.cancel();
 				return;
 			} else {
 
@@ -221,7 +221,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 					}
 				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35))
 						&& CandlePositionA == null) {	// Si pasaron mas de 35min y la posicion A no fue asiganda, entonces cancelamos la estrategia
-					this.cancel();
+					// this.cancel();
 					return;
 				} else if(CandlePositionA != null) {
 					if(startPeriod.isBefore(CandlePositionA.getPeriod().getStart().plusMinutes(50).plusSeconds(1))
@@ -245,7 +245,7 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 						}
 					} else if(startPeriod.isAfter(CandlePositionA.getPeriod().getStart().plusMinutes(50))
 							&& CandlePositionB == null) {	// Si pasaron mas de 50min y la posicion B no fue asiganda, entonces cancelamos la estrategia
-						this.cancel();
+						// this.cancel();
 						return;
 					} else if(CandlePositionB != null) {
 						

@@ -143,7 +143,7 @@ public class PosMgrDoubleBottomStrategy extends AbstractStrategyRule {
 			if (!this.isThereOpenPosition()) {
 				_log.info("No open position so Cancel Strategy Mgr Symbol: "
 						+ getSymbol() + " Time:" + startPeriod);
-				this.cancel();
+				// this.cancel();
 				return;
 			} else {
 

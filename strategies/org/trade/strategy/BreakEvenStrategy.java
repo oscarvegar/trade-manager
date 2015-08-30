@@ -1,33 +1,7 @@
 /* ===========================================================
  * Smart Trade System: An application to trade strategies for the Java(tm) platform
  * ===========================================================
- *
- * (C) Copyright 2011-2011, by Simon Allen and Contributors.
- *
- * Project Info:  org.trade
- *
- * This library is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
- * License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
- * USA.
- *
- * [Java is a trademark or registered trademark of Oracle, Inc.
- * in the United States and other countries.]
- *
- * (C) Copyright 2011-2011, by Simon Allen and Contributors.
- *
- * Original Author:  Simon Allen;
- * Contributor(s):   -;
+ * ELITEWARE IO. Daniel Morales.
  *
  * Changes
  * -------
@@ -213,8 +187,11 @@ public class BreakEvenStrategy extends AbstractStrategyRule {
 					
 					Candle currentCandle = currentCandleItem.getCandle();
 					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
+					DecimalFormat df = new DecimalFormat("#.00");
+					BigDecimal currentClose = new BigDecimal(currentCandle.getClose().doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+					BigDecimal preDayClose = new BigDecimal(prevDayCandle.getClose().doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
 					
-					if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {	// Validamos que el valor actual de LOW sea igual al de P
+					if(currentClose.doubleValue() == preDayClose.doubleValue()) {	// Validamos que el valor actual de LOW sea igual al de P
 						StrategyOK = Boolean.TRUE;
 						
 						if(!this.isThereOpenPosition()) {	// Siempre que no haya una orden abierta ...

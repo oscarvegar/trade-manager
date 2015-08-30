@@ -216,7 +216,11 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 					Candle currentCandle = currentCandleItem.getCandle();
 					Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
 					
-					if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {
+					BigDecimal currentClose = new BigDecimal(currentCandle.getClose().doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+					BigDecimal preDayClose = new BigDecimal(prevDayCandle.getClose().doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+					
+
+					if(currentClose.doubleValue() == preDayClose.doubleValue()) {
 						CandlePositionA = currentCandleItem;	// Asignamos el punto A
 					}
 				} else if(startPeriod.isAfter(this.getTradestrategy().getTradingday().getOpen().plusMinutes(35))
@@ -230,7 +234,11 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 						Candle currentCandle = currentCandleItem.getCandle();
 						Candle prevDayCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);	// Obtenemos el punto P, es decir el punto de apertura del día anterior
 						
-						if(currentCandle.getClose().doubleValue() == prevDayCandle.getClose().doubleValue()) {
+						BigDecimal currentClose = new BigDecimal(currentCandle.getClose().doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+						BigDecimal preDayClose = new BigDecimal(prevDayCandle.getClose().doubleValue()).setScale(2, RoundingMode.HALF_EVEN);
+					
+					
+						if(currentClose.doubleValue() == preDayClose.doubleValue()) {
 							CandlePositionB = currentCandleItem;	// Asignamos el punto B
 						/*
 						} else if(currentCandle.getLow().doubleValue() >= addAPercentToANumber(prevDayCandle.getLow().doubleValue(), 1)) {

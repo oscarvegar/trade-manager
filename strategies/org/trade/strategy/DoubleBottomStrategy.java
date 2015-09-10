@@ -152,7 +152,8 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 			CandleItem currentCandleItem = this.getCurrentCandle();
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod()
 					.getStart();
-			QuantityShares = ((Long) this.getTradestrategy().getValueCode("stockSharesQuantity")).intValue();
+			QuantityShares = ((Long) this.getTradestrategy()
+					.getValueCode("stockSharesQuantity")).intValue();
 
 			/*
 			 * Position is open kill this Strategy as its job is done. In this
@@ -168,15 +169,15 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 				 * 1 risk unit. If it does cancel the openPositionOrder this
 				 * will cause it to be marked as filled.
 				 */
-				if (OrderStatus.PARTIALFILLED.equals(this
-						.getOpenPositionOrder().getStatus())) {
-					if (isRiskViolated(currentCandleItem.getClose(), this
-							.getTradestrategy().getRiskAmount(), this
-							.getOpenPositionOrder().getQuantity(), this
-							.getOpenPositionOrder().getAverageFilledPrice())) {
-						this.cancelOrder(this.getOpenPositionOrder());
-					}
-				}
+//				if (OrderStatus.PARTIALFILLED.equals(this
+//						.getOpenPositionOrder().getStatus())) {
+//					if (isRiskViolated(currentCandleItem.getClose(), this
+//							.getTradestrategy().getRiskAmount(), this
+//							.getOpenPositionOrder().getQuantity(), this
+//							.getOpenPositionOrder().getAverageFilledPrice())) {
+//						this.cancelOrder(this.getOpenPositionOrder());
+//					}
+//				}
 				// this.cancel();
 				return;
 			} else 
@@ -361,8 +362,15 @@ public class DoubleBottomStrategy extends AbstractStrategyRule {
 				candleSeries.getContract().getIdContract(), newStartPeriod.minusDays(days),
 				newStartPeriod.minusDays(days), candleSeries.getBarSize());
 		
-		if(candleList.size() > 0) {
-			prevCandle = candleList.get(0);
+		for( Candle candle : candleList ){
+			if( prevCandle == null ) {
+				prevCandle = candle;
+				continue;
+			}
+			if( candle.getClose().compareTo(prevCandle.getClose()) < 0 ){
+				//El cierre del candle actual es menor al cierre del candle anterior
+				prevCandle = candle;
+			}
 		}
 		
 		return prevCandle;

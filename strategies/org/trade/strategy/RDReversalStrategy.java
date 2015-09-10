@@ -73,7 +73,6 @@ public class RDReversalStrategy extends AbstractStrategyRule {
 	private final static Logger _log = LoggerFactory
 			.getLogger(RDReversalStrategy.class);
 	private PersistentModel tradePersistentModel;
-	private ZonedDateTime fechaApertura930AM;
 	private ZonedDateTime fechaApertura2PM;
 	private CandleItem candlePositionA;
 	private CandleItem candlePositionB;
@@ -138,9 +137,11 @@ public class RDReversalStrategy extends AbstractStrategyRule {
 			CandleItem currentCandleItem = this.getCurrentCandle();
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod()
 					.getStart();
-			int cantidadCompra = ((Long) this.getTradestrategy()
-											 .getValueCode("stockSharesQuantity"))
-					 						 .intValue();
+			Object paramStock = this.getTradestrategy().getValueCode("stockSharesQuantity");
+			int cantidadCompra = 1;
+			if( paramStock != null ){
+				cantidadCompra = ((Long)paramStock).intValue();
+			}
 			
 			if (this.isThereOpenPosition()) {
 				_log.info("Strategy complete open position filled symbol: "
@@ -169,18 +170,16 @@ public class RDReversalStrategy extends AbstractStrategyRule {
 				_log.info("Strategy is closed: " + getSymbol() + " startPeriod: " + startPeriod);
 				ZonedDateTime fechaApertura = this.getTradestrategy().getTradingday().getOpen();
 				System.out.println("Fecha de apertura:: " + fechaApertura );
-				if(fechaApertura930AM == null) {
-					fechaApertura930AM = fechaApertura.plusMinutes(30);
-				}
 				if(fechaApertura2PM == null) {
-					fechaApertura2PM = fechaApertura.plusHours(6);
+					fechaApertura2PM = fechaApertura.plusHours(4);
+					fechaApertura2PM = fechaApertura2PM.plusMinutes(30);
 				}
 				
-				System.out.println("Fecha de rango inicial:: " + fechaApertura930AM );
+				System.out.println("Fecha de rango inicial:: " + fechaApertura );
 				System.out.println("Fecha de rango final:: " + fechaApertura2PM );
 				
 				// Si la cotizacion esta en el rango de tiempos definidos entre 9:30am y 2:00pm 
-				if( startPeriod.isAfter(fechaApertura930AM) && startPeriod.isBefore(fechaApertura2PM) ){
+				if( startPeriod.isAfter(fechaApertura) && startPeriod.isBefore(fechaApertura2PM) ){
 					//Si aun no encotramos el puntoA checamos el candle actual
 					if( candlePositionA == null ){
 						//Recuperamos si no exite el candle mas bajo del dia anterior

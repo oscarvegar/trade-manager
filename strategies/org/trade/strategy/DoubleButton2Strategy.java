@@ -71,8 +71,7 @@ public class DoubleButton2Strategy extends AbstractStrategyRule {
 	 */
 	private static final long serialVersionUID = -2281013751087462982L;
 	private PersistentModel tradePersistentModel;
-	private ZonedDateTime fechaAperturaPlus10;
-	private ZonedDateTime fechaAperturaPlus35;
+	private ZonedDateTime fechaApertura2pm;
 	private static Candle prevCandle;
 	private CandleItem candlePositionA;
 	private CandleItem candlePositionB;
@@ -139,9 +138,11 @@ public class DoubleButton2Strategy extends AbstractStrategyRule {
 			// Get the current candle
 			CandleItem currentCandleItem = this.getCurrentCandle();
 			ZonedDateTime startPeriod = currentCandleItem.getPeriod().getStart();
-			int cantidadCompra = ((Long) this.getTradestrategy()
-											 .getValueCode("stockSharesQuantity"))
-											 .intValue();
+			Object paramStock = this.getTradestrategy().getValueCode("stockSharesQuantity");
+			int cantidadCompra = 1;
+			if( paramStock != null ){
+				cantidadCompra = ((Long)paramStock).intValue();
+			}
 
 			System.out.println("current candlet: " + getSymbol() );
 			
@@ -174,24 +175,24 @@ public class DoubleButton2Strategy extends AbstractStrategyRule {
 				_log.info("Strategy is closed: " + getSymbol() + " startPeriod: " + startPeriod);
 				ZonedDateTime fechaApertura = this.getTradestrategy().getTradingday().getOpen();
 				System.out.println("Fecha de apertura:: " + fechaApertura );
-				if(fechaAperturaPlus10 == null) {
-					fechaAperturaPlus10 = fechaApertura.plusMinutes(30);
-				}
-				if(fechaAperturaPlus35 == null) {
-					fechaAperturaPlus35 = fechaApertura.plusHours(6);
+				if(fechaApertura2pm == null) {
+					fechaApertura2pm = fechaApertura.plusHours(4);
+					fechaApertura2pm = fechaApertura2pm.plusMinutes(30);
 				}
 				
-				System.out.println("Fecha de rango inicial:: " + fechaAperturaPlus10 );
-				System.out.println("Fecha de rango final:: " + fechaAperturaPlus35 );
+				System.out.println("Fecha de rango inicial:: " + fechaApertura );
+				System.out.println("Fecha de rango final:: " + fechaApertura2pm );
 				
 				
 				
 				
 				// Si la cotizacion esta en el rango de tiempos definidos entre 9:30am y 2:00pm 
-				if( startPeriod.isAfter(fechaAperturaPlus10) && startPeriod.isBefore(fechaAperturaPlus35) ){
+				if( startPeriod.isAfter(fechaApertura) && startPeriod.isBefore(fechaApertura2pm) ){
 					//Si aun no encotramos el puntoA checamos el candle actual
+					System.out.println(getSymbol() + " esta en el rango de 9:30am a 2:00pm");
 					if( candlePositionA == null ){
 						//Recuperamos si no exite el candle mas bajo del dia anterior
+						System.out.println(getSymbol() + " no ha encontrado posicion A");
 						if( prevCandle == null ){
 							System.out.println("El candle anterior no existe, loe recuperamos de la BD");
 							prevCandle = getPreviousDayCandleFromDb(candleSeries, startPeriod);
@@ -203,15 +204,17 @@ public class DoubleButton2Strategy extends AbstractStrategyRule {
 							this.candlePositionA = currentCandleItem;
 						}
 					}else if( candlePositionA != null && candlePositionB == null ){
+						System.out.println(getSymbol() + " ya encontro posicion B pero no ha encontrado posicion B");
 						// Si la posicion actual baja con respecto al punto A, se cancela la estrategia
 						if( currentCandleItem.getClose() < candlePositionA.getClose() ){
+							System.out.println("La estrategia se invalida ya que la cotización subio una vez encontrado el punto A");
 							isStrategyInValid = true;
 							return;
 						}
 						// 
 						if( new BigDecimal(currentCandleItem.getClose()).setScale(2, RoundingMode.HALF_UP).doubleValue()
 								== prevCandle.getClose().setScale(2, RoundingMode.HALF_UP).doubleValue() ){
-							System.out.println("SE ENCONTRO EL PUNTO B EN " + currentCandleItem.getPeriod());
+							System.out.println(getSymbol() + " HA ENCONTRADO EL PUNTO B EN " + currentCandleItem.getPeriod());
 							this.candlePositionB = currentCandleItem;
 						}
 						
